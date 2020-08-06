@@ -5,7 +5,7 @@ const fileUpload = require('express-fileupload');
 const fs = require('fs');
 
 const ipfs = new ipfsClient({
-    host: 'localhost',
+    host: 'localhost', // ipfs.infura.io
     port: 5001,
     protocol: 'http'
 });
@@ -34,8 +34,6 @@ app.post('/upload', (req, res) => {
         }
         const fileHash = await addFile(fileName, filePath);
 
-        console.log(fileHash);
-
         fs.unlink(filePath, (err) => {
             if (err) console.log(err.message);
         });
@@ -47,14 +45,18 @@ app.post('/upload', (req, res) => {
 });
 
 const addFile = async (fileName, filePath) => {
-    const file = fs.readFileSync(filePath);
-    const fileAdded = await ipfs.add({
-        path: fileName,
-        content: file
-    });
-    const fileHash = fileAdded[0].hash;
-
-    return fileHash;
+    try {
+        const file = fs.readFileSync(filePath);
+        const fileAdded = await ipfs.add({
+            path: fileName,
+            content: file
+        });
+        const fileHash = fileAdded[0].hash;
+        console.log(fileHash);
+        return fileHash;
+    } catch (error) {
+        console.log(error);
+    }
 };
 
 app.listen(3000, () => {
